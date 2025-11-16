@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Access Terminal</title>
+
+<style>
+    @keyframes glitch {
+        0% { text-shadow: 0 0 4px #00ff80; }
+        20% { text-shadow: 2px 0 #00ff80, -2px 0 #00ffaa; }
+        40% { text-shadow: -2px 0 #00ff80, 2px 0 #00ffaa; }
+        60% { text-shadow: 0 0 4px #00ff80; }
+        100% { text-shadow: 0 0 8px #00ff80; }
+    }
+
+    @keyframes flicker {
+        0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+            opacity: 1;
+        }
+        20%, 22%, 24%, 55% {
+            opacity: 0.4;
+        }
+    }
+
+    body {
+        background: black;
+        color: #00ff80;
+        font-family: "Courier New", monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        user-select: none;
+        animation: flicker 3s infinite;
+    }
+
+    .terminal {
+        border: 2px solid #00ff80;
+        padding: 30px;
+        width: 380px;
+        text-align: center;
+        box-shadow: 0 0 20px #00ff80;
+        animation: glitch 1.8s infinite;
+    }
+
+    h1 {
+        font-size: 22px;
+        animation: glitch 2.5s infinite;
+    }
+
+    #display {
+        background: black;
+        border: 2px solid #00ff80;
+        padding: 15px;
+        font-size: 28px;
+        margin-bottom: 20px;
+        letter-spacing: 10px;
+        box-shadow: inset 0 0 10px #00ff80;
+    }
+
+    .keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .btn {
+        border: 2px solid #00ff80;
+        padding: 20px;
+        font-size: 24px;
+        cursor: pointer;
+        background: rgba(0,255,128,0.15);
+        transition: 0.15s;
+    }
+
+    .btn:hover {
+        background: rgba(0,255,128,0.4);
+        box-shadow: 0 0 12px #00ff80;
+    }
+
+    #status {
+        margin-top: 20px;
+        height: 20px;
+        font-size: 18px;
+    }
+
+    .success { color: #00ff80; }
+    .fail { color: #ff0040; }
+    
+    #progressScreen {
+        display: none;
+        color: #00ff80;
+        font-size: 20px;
+        white-space: pre-line;
+        text-align: left;
+        animation: glitch 3s infinite;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="terminal" id="mainTerminal">
+    <h1>ACCESS REQUIRED</h1>
+    <div id="display">••••</div>
+
+    <div class="keypad">
+        <div class="btn">1</div>
+        <div class="btn">2</div>
+        <div class="btn">3</div>
+        <div class="btn">4</div>
+        <div class="btn">5</div>
+        <div class="btn">6</div>
+        <div class="btn">7</div>
+        <div class="btn">8</div>
+        <div class="btn">9</div>
+        <div class="btn">0</div>
+        <div class="btn" id="clear">CLR</div>
+        <div class="btn" id="enter">OK</div>
+    </div>
+
+    <div id="status"></div>
+</div>
+
+<div id="progressScreen"></div>
+
+<script>
+    const CORRECT_CODE = "4932";
+
+    let input = "";
+    const display = document.getElementById("display");
+    const status = document.getElementById("status");
+    const terminal = document.getElementById("mainTerminal");
+    const progressScreen = document.getElementById("progressScreen");
+
+    // Simple beep sound (base64)
+    const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEA..."); 
+    // (Note: Replace with your preferred base64 beep; shortened here for space)
+
+    // Alarm sound (base64)
+    const alarm = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAA...");
+
+    // Typewriter effect for progress screen
+    function typeText(element, text, speed = 40) {
+        let i = 0;
+        function type() {
+            element.textContent = text.slice(0, i);
+            i++;
+            if (i <= text.length) setTimeout(type, speed);
+        }
+        type();
+    }
+
+    document.querySelectorAll(".btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const value = btn.textContent;
+
+            if (!isNaN(value)) {
+                beep.play();
+            }
+
+            if (value === "CLR") {
+                input = "";
+                display.textContent = "••••";
+                status.textContent = "";
+                return;
+            }
+
+            if (value === "OK") {
+                if (input === CORRECT_CODE) {
+                    status.textContent = "ACCESS GRANTED";
+                    status.className = "success";
+                    startProgressScreen();
+                } else {
+                    alarm.play();
+                    status.textContent = "ACCESS DENIED";
+                    status.className = "fail";
+                }
+                return;
+            }
+
+            if (input.length < 4) {
+                input += value;
+                display.textContent = "●".repeat(input.length) + "•".repeat(4 - input.length);
+            }
+        });
+    });
+
+    function startProgressScreen() {
+        setTimeout(() => {
+            terminal.style.display = "none";
+            progressScreen.style.display = "block";
+            const fakeLog = 
+`> INITIATING BREACH PROTOCOL...
+> BYPASSING SECURITY LAYERS...
+> CONNECTING TO SECURE NODE...
+> DECRYPTING FIREWALL (AES-4096)...
+> ACCESSING MAINFRAME...
+> ESTABLISHING REMOTE LINK...
+> DOWNLOAD STARTED: █▒▒▒▒▒▒▒▒▒ 3%
+> DOWNLOAD: ██▒▒▒▒▒▒▒▒ 18%
+> DOWNLOAD: ██████▒▒▒▒ 54%
+> DOWNLOAD: ██████████ 100%
+> OPERATION COMPLETE.
+`;
+
+            typeText(progressScreen, fakeLog, 35);
+        }, 700);
+    }
+</script>
+
+</body>
+</html>
