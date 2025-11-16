@@ -5,96 +5,126 @@
 <title>Access Terminal</title>
 
 <style>
-    @keyframes glitch {
-        0% { text-shadow: 0 0 4px #00ff80; }
-        20% { text-shadow: 2px 0 #00ff80, -2px 0 #00ffaa; }
-        40% { text-shadow: -2px 0 #00ff80, 2px 0 #00ffaa; }
-        60% { text-shadow: 0 0 4px #00ff80; }
-        100% { text-shadow: 0 0 8px #00ff80; }
-    }
+/* ------------------ CRT EFFECTS ------------------ */
+body {
+    background: black;
+    color: #00ff80;
+    font-family: "Courier New", monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-    @keyframes flicker {
-        0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-            opacity: 1;
-        }
-        20%, 22%, 24%, 55% {
-            opacity: 0.4;
-        }
-    }
+    /* CRT curvature */
+    transform: perspective(700px) translateZ(0) rotateX(2deg) rotateY(-2deg);
 
-    body {
-        background: black;
-        color: #00ff80;
-        font-family: "Courier New", monospace;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        user-select: none;
-        animation: flicker 3s infinite;
-    }
+    /* Scanlines */
+    background-image:
+        linear-gradient(rgba(0,255,128,0.03) 50%, rgba(0,0,0,0.15) 50%);
+    background-size: 100% 3px;
 
-    .terminal {
-        border: 2px solid #00ff80;
-        padding: 30px;
-        width: 380px;
-        text-align: center;
-        box-shadow: 0 0 20px #00ff80;
-        animation: glitch 1.8s infinite;
-    }
+    /* Vignette */
+    box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.7);
+}
 
-    h1 {
-        font-size: 22px;
-        animation: glitch 2.5s infinite;
-    }
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    97% { opacity: 0.7; }
+    98% { opacity: 0.3; }
+    99% { opacity: 0.9; }
+}
 
-    #display {
-        background: black;
-        border: 2px solid #00ff80;
-        padding: 15px;
-        font-size: 28px;
-        margin-bottom: 20px;
-        letter-spacing: 10px;
-        box-shadow: inset 0 0 10px #00ff80;
-    }
+@keyframes glitchBurst {
+    0% { filter: none; }
+    92% { filter: none; }
+    93% { filter: hue-rotate(90deg) contrast(2); }
+    94% { filter: hue-rotate(-120deg) blur(2px); }
+    95% { filter: none; }
+    100% { filter: none; }
+}
 
-    .keypad {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-    }
+.glitchActive {
+    animation: glitchBurst 0.4s linear;
+}
 
-    .btn {
-        border: 2px solid #00ff80;
-        padding: 20px;
-        font-size: 24px;
-        cursor: pointer;
-        background: rgba(0,255,128,0.15);
-        transition: 0.15s;
-    }
+/* ------------------ TERMINAL BOX ------------------ */
+.terminal {
+    border: 2px solid #00ff80;
+    padding: 30px;
+    width: 380px;
+    text-align: center;
+    box-shadow: 0 0 20px #00ff80;
+    animation: flicker 2s infinite;
+    z-index: 3;
+}
 
-    .btn:hover {
-        background: rgba(0,255,128,0.4);
-        box-shadow: 0 0 12px #00ff80;
-    }
+h1 {
+    font-size: 22px;
+    animation: flicker 3s infinite;
+}
 
-    #status {
-        margin-top: 20px;
-        height: 20px;
-        font-size: 18px;
-    }
+#display {
+    background: black;
+    border: 2px solid #00ff80;
+    padding: 15px;
+    font-size: 28px;
+    margin-bottom: 20px;
+    letter-spacing: 8px;
+    box-shadow: inset 0 0 10px #00ff80;
+}
 
-    .success { color: #00ff80; }
-    .fail { color: #ff0040; }
-    
-    #progressScreen {
-        display: none;
-        color: #00ff80;
-        font-size: 20px;
-        white-space: pre-line;
-        text-align: left;
-        animation: glitch 3s infinite;
-    }
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.btn {
+    border: 2px solid #00ff80;
+    padding: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    background: rgba(0,255,128,0.15);
+    transition: 0.15s;
+}
+
+.btn:hover {
+    background: rgba(0,255,128,0.4);
+    box-shadow: 0 0 12px #00ff80;
+}
+
+#status {
+    margin-top: 20px;
+    height: 20px;
+    font-size: 18px;
+}
+
+/* ------------------ PROGRESS SCREEN ------------------ */
+#progressScreen {
+    display: none;
+    color: #00ff80;
+    font-size: 20px;
+    white-space: pre-line;
+    text-align: left;
+    z-index: 3;
+}
+
+/* ------------------ SYSTEM OVERRIDE SCREEN ------------------ */
+#overrideScreen {
+    position: fixed;
+    inset: 0;
+    background: black;
+    color: red;
+    display: none;
+    text-align: center;
+    font-size: 40px;
+    padding-top: 20%;
+    letter-spacing: 4px;
+    text-shadow: 0 0 15px red;
+    animation: flicker 0.15s infinite;
+    z-index: 10;
+}
 </style>
 </head>
 
@@ -102,7 +132,7 @@
 
 <div class="terminal" id="mainTerminal">
     <h1>ACCESS REQUIRED</h1>
-    <div id="display">••••</div>
+    <div id="display">••••••••••••</div>
 
     <div class="keypad">
         <div class="btn">1</div>
@@ -115,6 +145,7 @@
         <div class="btn">8</div>
         <div class="btn">9</div>
         <div class="btn">0</div>
+        <div class="btn">.</div>
         <div class="btn" id="clear">CLR</div>
         <div class="btn" id="enter">OK</div>
     </div>
@@ -124,89 +155,116 @@
 
 <div id="progressScreen"></div>
 
+<div id="overrideScreen">
+    SYSTEM OVERRIDE ENGAGED<br>
+    FORCE ACCESS ENABLED
+</div>
+
 <script>
-    const CORRECT_CODE = "4932";
+/* ------------------ CONFIG ------------------ */
+const CORRECT_CODE = "2284.66666667";
 
-    let input = "";
-    const display = document.getElementById("display");
-    const status = document.getElementById("status");
-    const terminal = document.getElementById("mainTerminal");
-    const progressScreen = document.getElementById("progressScreen");
+let input = "";
+const display = document.getElementById("display");
+const status = document.getElementById("status");
+const terminal = document.getElementById("mainTerminal");
+const progressScreen = document.getElementById("progressScreen");
+const overrideScreen = document.getElementById("overrideScreen");
 
-    // Simple beep sound (base64)
-    const beep = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEA..."); 
-    // (Note: Replace with your preferred base64 beep; shortened here for space)
+/* ------------------ RANDOM GLITCH ------------------ */
+setInterval(() => {
+    document.body.classList.add("glitchActive");
+    setTimeout(() => {
+        document.body.classList.remove("glitchActive");
+    }, 150);
+}, 4000 + Math.random() * 6000);
 
-    // Alarm sound (base64)
-    const alarm = new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAA...");
-
-    // Typewriter effect for progress screen
-    function typeText(element, text, speed = 40) {
-        let i = 0;
-        function type() {
-            element.textContent = text.slice(0, i);
-            i++;
-            if (i <= text.length) setTimeout(type, speed);
-        }
-        type();
+/* ------------------ TYPE EFFECT ------------------ */
+function typeText(element, text, speed = 35) {
+    let i = 0;
+    function type() {
+        element.textContent = text.slice(0, i);
+        i++;
+        if (i <= text.length) setTimeout(type, speed);
     }
+    type();
+}
 
-    document.querySelectorAll(".btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const value = btn.textContent;
+/* ------------------ BUTTON HANDLING ------------------ */
+document.querySelectorAll(".btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const value = btn.textContent;
 
-            if (!isNaN(value)) {
-                beep.play();
+        /* Clear */
+        if (value === "CLR") {
+            input = "";
+            display.textContent = "••••••••••••";
+            status.textContent = "";
+            return;
+        }
+
+        /* Submit */
+        if (value === "OK") {
+            if (input === CORRECT_CODE) {
+                status.textContent = "ACCESS GRANTED";
+                status.style.color = "#00ff80";
+                launchProgress();
+            } else {
+                status.textContent = "ACCESS DENIED";
+                status.style.color = "red";
             }
+            return;
+        }
 
-            if (value === "CLR") {
-                input = "";
-                display.textContent = "••••";
-                status.textContent = "";
-                return;
-            }
-
-            if (value === "OK") {
-                if (input === CORRECT_CODE) {
-                    status.textContent = "ACCESS GRANTED";
-                    status.className = "success";
-                    startProgressScreen();
-                } else {
-                    alarm.play();
-                    status.textContent = "ACCESS DENIED";
-                    status.className = "fail";
-                }
-                return;
-            }
-
-            if (input.length < 4) {
-                input += value;
-                display.textContent = "●".repeat(input.length) + "•".repeat(4 - input.length);
-            }
-        });
+        /* Add input */
+        if (input.length < 12) {
+            input += value;
+            display.textContent =
+                "●".repeat(input.length) + "•".repeat(12 - input.length);
+        }
     });
+});
 
-    function startProgressScreen() {
-        setTimeout(() => {
-            terminal.style.display = "none";
-            progressScreen.style.display = "block";
-            const fakeLog = 
+/* ------------------ HACKING PROGRESS ------------------ */
+function launchProgress() {
+    setTimeout(() => {
+        terminal.style.display = "none";
+        progressScreen.style.display = "block";
+
+        const log =
 `> INITIATING BREACH PROTOCOL...
-> BYPASSING SECURITY LAYERS...
-> CONNECTING TO SECURE NODE...
-> DECRYPTING FIREWALL (AES-4096)...
-> ACCESSING MAINFRAME...
-> ESTABLISHING REMOTE LINK...
-> DOWNLOAD STARTED: █▒▒▒▒▒▒▒▒▒ 3%
-> DOWNLOAD: ██▒▒▒▒▒▒▒▒ 18%
-> DOWNLOAD: ██████▒▒▒▒ 54%
-> DOWNLOAD: ██████████ 100%
-> OPERATION COMPLETE.
+> DECRYPTING MULTI-LAYER FIREWALL...
+> INJECTING ACCESS TOKEN...
+> OVERRIDING SECURITY LOCKS...
+> SYSTEM RESPONSE: OVERRIDE REQUESTED
+> STABILIZING CONNECTION...
+> ENGAGING CORE BYPASS SEQUENCE...
+> ACCESS LEVEL: ADMINISTRATOR
+> TRANSFERRING CONTROL...
 `;
 
-            typeText(progressScreen, fakeLog, 35);
-        }, 700);
-    }
+        typeText(progressScreen, log, 38);
+
+        setTimeout(() => {
+            startOverride();
+        }, 5500);
+
+    }, 900);
+}
+
+/* ------------------ SYSTEM OVERRIDE ------------------ */
+function startOverride() {
+    progressScreen.style.display = "none";
+    overrideScreen.style.display = "block";
+
+    setTimeout(() => {
+        overrideScreen.textContent += "\nACCESS CHANNEL UNLOCKED";
+    }, 1500);
+
+    setTimeout(() => {
+        overrideScreen.textContent += "\nSYSTEM BREACH SUCCESSFUL";
+    }, 3000);
+}
 </script>
 
 </body>
