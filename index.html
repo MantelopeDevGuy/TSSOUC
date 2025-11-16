@@ -5,7 +5,7 @@
 <title>Access Terminal</title>
 
 <style>
-/* CRT screen effects */
+/* CRT + general UI styles */
 body {
     background: black;
     color: #00ff80;
@@ -15,20 +15,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-
-    /* CRT curvature */
     transform: perspective(700px) translateZ(0) rotateX(2deg) rotateY(-2deg);
-
-    /* Scanlines */
     background-image:
         linear-gradient(rgba(0,255,128,0.03) 50%, rgba(0,0,0,0.15) 50%);
     background-size: 100% 3px;
-
-    /* Vignette */
     box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.7);
 }
 
-/* Glitch burst */
+/* Glitch */
 @keyframes glitchBurst {
     0%, 92%, 100% { filter: none; }
     93% { filter: hue-rotate(90deg) contrast(2); }
@@ -39,7 +33,7 @@ body {
     animation: glitchBurst 0.4s linear;
 }
 
-/* Terminal box */
+/* Terminal Window */
 .terminal {
     border: 2px solid #00ff80;
     padding: 30px;
@@ -49,6 +43,7 @@ body {
     z-index: 3;
 }
 
+/* Display mask */
 #display {
     border: 2px solid #00ff80;
     padding: 15px;
@@ -57,24 +52,24 @@ body {
     letter-spacing: 6px;
 }
 
+/* Keypad */
 .keypad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
-
 .btn {
     border: 2px solid #00ff80;
     padding: 20px;
     font-size: 24px;
     cursor: pointer;
     background: rgba(0,255,128,0.15);
-    transition: 0.15s;
 }
 .btn:hover {
     background: rgba(0,255,128,0.4);
 }
 
+/* Progress Screen */
 #progressScreen {
     display: none;
     color: #00ff80;
@@ -82,6 +77,7 @@ body {
     white-space: pre-line;
 }
 
+/* Override Screen */
 #overrideScreen {
     position: fixed;
     inset: 0;
@@ -92,19 +88,40 @@ body {
     padding-top: 20%;
     font-size: 40px;
     display: none;
+    z-index: 10;
+}
+
+/* DOCUMENT PAGE */
+#documentPage {
+    display: none;
+    flex-direction: column;
+    color: #00ff80;
+    text-align: center;
+    padding-top: 30px;
+    z-index: 50;
+}
+
+#documentHeader {
+    font-size: 22px;
+    margin-bottom: 25px;
+    color: #00ff80;
+    text-shadow: 0 0 10px #00ff80;
+}
+
+#documentImage {
+    max-width: 75%;
+    border: 2px solid #00ff80;
+    box-shadow: 0 0 20px #00ff80;
 }
 </style>
 </head>
 <body>
 
-<!-- Terminal -->
+<!-- Terminal Window -->
 <div class="terminal" id="mainTerminal">
     <h1>ACCESS REQUIRED</h1>
-
-    <!-- Masked code display -->
     <div id="display">••••••••••••••</div>
 
-    <!-- Keypad -->
     <div class="keypad">
         <div class="btn">1</div>
         <div class="btn">2</div>
@@ -123,16 +140,26 @@ body {
     <div id="status"></div>
 </div>
 
-<!-- Progress Screen -->
+<!-- Hacking Progress Screen -->
 <div id="progressScreen"></div>
 
 <!-- Override Screen -->
 <div id="overrideScreen">SYSTEM OVERRIDE ENGAGED</div>
 
-<script>
-/* FINAL WORKING VERSION */
+<!-- FINAL DOCUMENT PAGE -->
+<div id="documentPage">
+    <div id="documentHeader">
+        TSSOUC/LEVEL8/DOCUMENTS/1962/THESSINCIDENT/newspaper.jpeg
+    </div>
 
-// The working code
+    <!-- 🔻 Replace "yourimagehere.jpg" with ANY real image URL -->
+    <img id="documentImage" src="newspaper.jpg">
+</div>
+
+
+<script>
+/* FINAL WORKING VERSION WITH DOCUMENT PAGE */
+
 const CORRECT_CODE = "228466666667";
 const MAX_LEN = CORRECT_CODE.length;
 
@@ -142,11 +169,11 @@ const status = document.getElementById("status");
 const terminal = document.getElementById("mainTerminal");
 const progress = document.getElementById("progressScreen");
 const override = document.getElementById("overrideScreen");
+const documentPage = document.getElementById("documentPage");
 
-// Initial mask
 display.textContent = "•".repeat(MAX_LEN);
 
-// Random glitch bursts
+/* Random glitch effect */
 setInterval(() => {
     document.body.classList.add("glitchActive");
     setTimeout(() => {
@@ -154,7 +181,18 @@ setInterval(() => {
     }, 150);
 }, 4000 + Math.random() * 6000);
 
-// Handle keypad presses
+/* Typing animation */
+function typeText(el, text, speed) {
+    let i = 0;
+    function type() {
+        el.textContent = text.slice(0, i);
+        i++;
+        if (i <= text.length) setTimeout(type, speed);
+    }
+    type();
+}
+
+/* Button interactions */
 document.querySelectorAll(".btn").forEach(btn => {
     btn.addEventListener("click", () => {
         const value = btn.textContent;
@@ -186,18 +224,7 @@ document.querySelectorAll(".btn").forEach(btn => {
     });
 });
 
-// Typing effect
-function typeText(el, text, speed) {
-    let i = 0;
-    function type() {
-        el.textContent = text.slice(0, i);
-        i++;
-        if (i <= text.length) setTimeout(type, speed);
-    }
-    type();
-}
-
-// Hacking progress screen
+/* Show progress screen */
 function launchProgress() {
     setTimeout(() => {
         terminal.style.display = "none";
@@ -215,9 +242,16 @@ function launchProgress() {
 
         setTimeout(() => {
             override.style.display = "block";
+            setTimeout(showFinalDocument, 2500);
         }, 5000);
 
     }, 900);
+}
+
+/* SHOW FINAL DOCUMENT PAGE */
+function showFinalDocument() {
+    override.style.display = "none";
+    documentPage.style.display = "flex";
 }
 </script>
 
