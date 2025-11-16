@@ -162,9 +162,11 @@ h1 {
 
 <script>
 /* ------------------ CONFIG ------------------ */
-const CORRECT_CODE = "2284.66666667";
+const CORRECT_CODE = "2284.66666667";   // 14 characters
 
 let input = "";
+const MAX_LEN = CORRECT_CODE.length;
+
 const display = document.getElementById("display");
 const status = document.getElementById("status");
 const terminal = document.getElementById("mainTerminal");
@@ -198,13 +200,16 @@ document.querySelectorAll(".btn").forEach(btn => {
         /* Clear */
         if (value === "CLR") {
             input = "";
-            display.textContent = "••••••••••••";
+            display.textContent = "•".repeat(MAX_LEN);
             status.textContent = "";
             return;
         }
 
         /* Submit */
         if (value === "OK") {
+            console.log("Entered code:", input); // DEBUG
+            console.log("Correct code:", CORRECT_CODE); // DEBUG
+
             if (input === CORRECT_CODE) {
                 status.textContent = "ACCESS GRANTED";
                 status.style.color = "#00ff80";
@@ -217,10 +222,10 @@ document.querySelectorAll(".btn").forEach(btn => {
         }
 
         /* Add input */
-        if (input.length < 12) {
+        if (input.length < MAX_LEN) {
             input += value;
             display.textContent =
-                "●".repeat(input.length) + "•".repeat(12 - input.length);
+                "●".repeat(input.length) + "•".repeat(MAX_LEN - input.length);
         }
     });
 });
@@ -266,6 +271,7 @@ function startOverride() {
     }, 3000);
 }
 </script>
+
 
 </body>
 </html>
