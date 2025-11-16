@@ -5,6 +5,7 @@
 <title>Access Terminal</title>
 
 <style>
+/* CRT screen effects */
 body {
     background: black;
     color: #00ff80;
@@ -15,15 +16,30 @@ body {
     justify-content: center;
     align-items: center;
 
+    /* CRT curvature */
     transform: perspective(700px) translateZ(0) rotateX(2deg) rotateY(-2deg);
 
+    /* Scanlines */
     background-image:
         linear-gradient(rgba(0,255,128,0.03) 50%, rgba(0,0,0,0.15) 50%);
     background-size: 100% 3px;
 
+    /* Vignette */
     box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.7);
 }
 
+/* Glitch burst */
+@keyframes glitchBurst {
+    0%, 92%, 100% { filter: none; }
+    93% { filter: hue-rotate(90deg) contrast(2); }
+    94% { filter: hue-rotate(-120deg) blur(2px); }
+    95% { filter: none; }
+}
+.glitchActive {
+    animation: glitchBurst 0.4s linear;
+}
+
+/* Terminal box */
 .terminal {
     border: 2px solid #00ff80;
     padding: 30px;
@@ -81,10 +97,14 @@ body {
 </head>
 <body>
 
+<!-- Terminal -->
 <div class="terminal" id="mainTerminal">
     <h1>ACCESS REQUIRED</h1>
+
+    <!-- Masked code display -->
     <div id="display">••••••••••••••</div>
 
+    <!-- Keypad -->
     <div class="keypad">
         <div class="btn">1</div>
         <div class="btn">2</div>
@@ -96,7 +116,6 @@ body {
         <div class="btn">8</div>
         <div class="btn">9</div>
         <div class="btn">0</div>
-        <div class="btn">.</div>
         <div class="btn" id="clear">CLR</div>
         <div class="btn" id="enter">OK</div>
     </div>
@@ -104,35 +123,42 @@ body {
     <div id="status"></div>
 </div>
 
+<!-- Progress Screen -->
 <div id="progressScreen"></div>
+
+<!-- Override Screen -->
 <div id="overrideScreen">SYSTEM OVERRIDE ENGAGED</div>
 
-
 <script>
-// ********************************************
-// FIXED + WORKING VERSION
-// ********************************************
+/* FINAL WORKING VERSION */
 
-const CORRECT_CODE = "2284.66666667";  // EXACT string expected
-const MAX_LEN = CORRECT_CODE.length;   // 14 characters
+// The working code
+const CORRECT_CODE = "228466666667";
+const MAX_LEN = CORRECT_CODE.length;
 
 let input = "";
-
 const display = document.getElementById("display");
 const status = document.getElementById("status");
 const terminal = document.getElementById("mainTerminal");
 const progress = document.getElementById("progressScreen");
 const override = document.getElementById("overrideScreen");
 
-// Update mask initially
+// Initial mask
 display.textContent = "•".repeat(MAX_LEN);
 
-// Button input
+// Random glitch bursts
+setInterval(() => {
+    document.body.classList.add("glitchActive");
+    setTimeout(() => {
+        document.body.classList.remove("glitchActive");
+    }, 150);
+}, 4000 + Math.random() * 6000);
+
+// Handle keypad presses
 document.querySelectorAll(".btn").forEach(btn => {
     btn.addEventListener("click", () => {
         const value = btn.textContent;
 
-        // Clear
         if (value === "CLR") {
             input = "";
             display.textContent = "•".repeat(MAX_LEN);
@@ -140,15 +166,11 @@ document.querySelectorAll(".btn").forEach(btn => {
             return;
         }
 
-        // Submit
         if (value === "OK") {
-            console.log("Entered:", JSON.stringify(input));
-            console.log("Correct:", JSON.stringify(CORRECT_CODE));
-
             if (input === CORRECT_CODE) {
                 status.textContent = "ACCESS GRANTED";
                 status.style.color = "#00ff80";
-                beginProgress();
+                launchProgress();
             } else {
                 status.textContent = "ACCESS DENIED";
                 status.style.color = "red";
@@ -156,7 +178,6 @@ document.querySelectorAll(".btn").forEach(btn => {
             return;
         }
 
-        // Add a char
         if (input.length < MAX_LEN) {
             input += value;
             display.textContent =
@@ -165,9 +186,19 @@ document.querySelectorAll(".btn").forEach(btn => {
     });
 });
 
+// Typing effect
+function typeText(el, text, speed) {
+    let i = 0;
+    function type() {
+        el.textContent = text.slice(0, i);
+        i++;
+        if (i <= text.length) setTimeout(type, speed);
+    }
+    type();
+}
 
-// Progress screen
-function beginProgress() {
+// Hacking progress screen
+function launchProgress() {
     setTimeout(() => {
         terminal.style.display = "none";
         progress.style.display = "block";
@@ -175,7 +206,6 @@ function beginProgress() {
         const log =
 `> INITIALIZING OVERRIDE...
 > BREACH PROTOCOL ACTIVE...
-> DEEP SYSTEM SCAN...
 > FIREWALL NEUTRALIZED...
 > ADMIN ROUTE ELEVATED...
 > CORE CONTROL HANDOFF...
@@ -188,17 +218,6 @@ function beginProgress() {
         }, 5000);
 
     }, 900);
-}
-
-// Typing effect
-function typeText(el, text, speed) {
-    let i = 0;
-    function type() {
-        el.textContent = text.slice(0, i);
-        i++;
-        if (i <= text.length) setTimeout(type, speed);
-    }
-    type();
 }
 </script>
 
